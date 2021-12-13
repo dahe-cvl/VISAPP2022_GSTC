@@ -1,33 +1,29 @@
-from Dataloader import Dataset, ImageFolderWithPaths
+from Dataloader import ImageFolderWithPaths
 from Models import FeatureExtractor
-
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 import numpy as np
 import torch
-from sklearn.cluster import KMeans
-from sklearn import metrics
-from torchvision import datasets
-from torch.utils.data.sampler import SubsetRandomSampler
-from torch.utils import data
-import torchvision
 from matplotlib import pyplot as plt
 import cv2
+import os
+torch.manual_seed(17)
 
-print("Welcome to the relation detection framework")
+#db_path = "/caa/Projects02/vhh/private/database_nobackup/stc_vhh_mmsi_1_3_0/stc_vhh_mmsi_v1_3_0/"
+db_path = "/caa/Projects02/vhh/private/database_nobackup/public_datasets/movienet/movienet_shottypes_split/"
+#db_path = "/data/ext/VHH/datasets/public_datasets/cinescale/all_cinescale/"
+#db_path = "/caa/Projects02/vhh/private/database_nobackup/all_cinescale/"
 
-#db_path = "/data/share/datasets/vhh_rd_database_v1/"
-#db_path = "/data/share/datasets/vhh_rd_database_v2/"
-db_path = "/data/ext/VHH/datasets/public_datasets/caltech101/test/"
-#db_path = "/data/ext/VHH/datasets/public_datasets/places365_standard/val/"
-#db_path = "/data/ext/VHH/datasets/public_datasets/irsgs_scene_graph_similarity_db/"
-
+subset = "test"   # train val test all
 SAVE_FEATURES_FLAG = True
+SAVE_FEATURES_AS_SINGLE_SHOTS_FLAG = True
 batch_size = 64
-num_workers = 2
-backbone = "siamesenet_backbone_resnet152"
-db_name = "caltech101"
+num_workers = 4
+backbone = "movienetresnet50"  # resnet152 resnet18  vgg16  resnet152_gcn  stcresnet50  stc_vgg16 resnet50  movienetresnet50
+db_name = "movienet_shottypes_split"  # all_cinescale  caltech101 places365 vhh_rd_database_v2 ucmerced  vhh_mmsi_v1_3_0_relation_db    stcv4   StcV4Graph_Resnet152  stc_vhh_mmsi_v1_3_0 movienet_shottypes_v2  all_movienet_shottypes_v2 movienet_shottypes_split histshotds
+dst_path = "./extracted_features/"
 
+db_path = os.path.join(db_path, subset)
 
 class ToRGB(object):
     def __call__(self, img_np: np.ndarray):
@@ -39,65 +35,32 @@ class ToRGB(object):
         return self.__class__.__name__ + '_rgb_'
 
 transform_test = transforms.Compose([
-    #transforms.CenterCrop((250,250)),
     transforms.Resize((224, 224)),
-    #ToRGB(),
     transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    #transforms.Normalize([0.0, 0.0, 0.0], [1.0, 1.0, 1.0])
+    transforms.Normalize([75.67079594559294 / 255.0,
+                                68.76940725676867 / 255.0,
+                                62.73719133427122 / 255.0],
+                             [66.50369750799024 / 255.0,
+                                64.23437522274287 / 255.0,
+                                62.36074514298541 / 255.0
+                            ])
 ])
 
-'''
-# load relation detection dataset
-test_data = Dataset(path="/data/share/datasets/vhh_rd_database_v1/",
-                    shuffle=False,
-                    transform=transform_test)
-testloader = DataLoader(test_data,
-                        batch_size=batch_size,
-                        shuffle=False,
-                        num_workers=num_workers
-                        )
-'''
-
-'''
-test_data = torchvision.datasets.CIFAR10(root='./data',
-                                              train=True,
-                                              download=True,
-                                              transform=transform_test)
-testloader = DataLoader(test_data,
-                        batch_size=batch_size,
-                        shuffle=False,
-                        num_workers=num_workers
-                        )
-'''
-
-'''
-test_data = torchvision.datasets.FashionMNIST(root='./data/',
-                                              train=True,
-                                              download=True,
-                                              transform=transform_test)
-testloader = DataLoader(test_data,
-                        batch_size=batch_size,
-                        shuffle=False,
-                        num_workers=num_workers
-                        )
-'''
-
-
-# load relation detection dataset
 test_data = ImageFolderWithPaths(root=db_path,
                                  transform=transform_test)
+
 testloader = DataLoader(test_data,
                         batch_size=batch_size,
                         shuffle=False,
                         num_workers=num_workers
                         )
 
-extractor = FeatureExtractor(db_name=db_name,
+extractor = FeatureExtractor(dst_path=dst_path,
+                             db_name=db_name,
                              dataloader=testloader,
                              backbone=backbone,
-                             save_features_as_numpy_flag=True)
-#extractor.visualize_random_data_samples()
-#exit()
+                             save_features_as_numpy_flag=SAVE_FEATURES_FLAG,
+                             save_features_as_single_shot_flag=SAVE_FEATURES_AS_SINGLE_SHOTS_FLAG,
+                             )
 
 extractor.get_all_features()
