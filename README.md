@@ -12,9 +12,12 @@ To analyze films and documentaries (indexing, content understanding), a shot typ
 
 ## Dataset 
 
+The dataset used in this investigation is based on the Historical Film Shot Dataset (HistShotDS-V1): 
+
 HistShotDS(V1) - Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5770202.svg)](https://doi.org/10.5281/zenodo.5770202)
 
-HistShotDS-Extended --> LINK to annotations
+
+This dataset was extended and includes finally about 35000 labeled samples. Due to copyright issues we are only able to publish the annotations as well as the source of the films. All annotations are summarized in the Annotations_VISAPP2022.xlsx (HistShotDS-Extended --> [HistShotDS-Extended](annotations/)).
 
 ## Methodology
 
